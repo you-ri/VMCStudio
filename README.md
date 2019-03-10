@@ -32,6 +32,10 @@ Project Settings の Script Execution Order で Final IK 関連のコンポー�
 インポート後 FBXAnimationExporterWindow でスクリプトエラーが発生して動かない場合、Package Manager から FBX Exporter を一旦削除して、再インストールすると通ります。
 FBX Exporter 2.0.1-preview.5 にて動作確認しています。
 
+## 使用方法
+
+[こちら](https://you-ri.github.io/VMCStudio/) を参照してください。
+
 ## 謝辞
 - [VirtualMotionCapture] に手を加える形で開発しました。
 - [VTuber Hackathon 2018 岡山大会](http://www.creatorsprime.co.jp/vth2018/web.html) チーム Kenzoku 継続プロジェクトの一環として開発しました。
