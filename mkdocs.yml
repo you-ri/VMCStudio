@@ -1,0 +1,46 @@
+# Project information
+site_name: 'VMCStudio'
+site_description: 'VMCStudio'
+site_author: 'you-ri'
+site_url: 'http://yourSite'
+
+
+# Copyright
+copyright: 'Copyright (c) 2019 you-ri'
+
+# Documentation and theme
+docs_dir: 'docs'
+theme:
+  name: 'material'
+  language: 'ja'
+extra:
+  search:
+    language: 'jp'
+
+# Options
+extra:
+
+  palette:
+    primary: 'Light Blue'
+    accent: 'Orange'
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+  i18n:
+    prev: 'Previous'
+    next: 'Next'
+  author:
+    github: 'you-ri'
+    twitter: 'you-ri'
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: '#'
+
+nav:
+  - はじめかた: index.md
+  - manual.md
+  - recordmotion.md
+  - qa.md
