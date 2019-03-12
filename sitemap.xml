@@ -2,22 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
      <loc>http://yourSite/</loc>
-     <lastmod>2019-03-10</lastmod>
+     <lastmod>2019-03-13</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>http://yourSite/manual/</loc>
-     <lastmod>2019-03-10</lastmod>
+     <lastmod>2019-03-13</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>http://yourSite/motioncapture/</loc>
+     <lastmod>2019-03-13</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>http://yourSite/recordmotion/</loc>
-     <lastmod>2019-03-10</lastmod>
+     <lastmod>2019-03-13</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>http://yourSite/qa/</loc>
-     <lastmod>2019-03-10</lastmod>
+     <lastmod>2019-03-13</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
