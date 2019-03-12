@@ -42,5 +42,6 @@ markdown_extensions:
 nav:
   - はじめかた: index.md
   - manual.md
+  - motioncapture.md
   - recordmotion.md
   - qa.md

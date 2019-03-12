@@ -20,7 +20,7 @@
 
 ## 準備
 
-クローンまたはダウンロードした後、以下のアセットをインポートします。
+[GitHub VMCStudio](https://github.com/you-ri/VMCStudio) にアクセスして、クローンまたはダウンロードします。その後に以下のアセットをインポートします。
 
 - [Final IK 1.8](https://assetstore.unity.com/packages/tools/animation/final-ik-14290) *AssetStoreから購入する必要があります。
 - [SteamVR Plugin v2.2.0](https://assetstore.unity.com/packages/tools/integration/steamvr-plugin-32647)
@@ -37,7 +37,11 @@ FBX Exporter 2.0.1-preview.5 にて動作確認しています。
 - [VirtualMotionCapture] に手を加える形で開発しました。
 - [VTuber Hackathon 2018 岡山大会](http://www.creatorsprime.co.jp/vth2018/web.html) チーム Kenzoku 継続プロジェクトの一環として開発しました。
 
-## ライセンス
+## マニュアル
+
+[こちら](https://you-ri.github.io/VMCStudio/) を参照してください。
+
+## License
 
 [MIT](LICENSE)
 

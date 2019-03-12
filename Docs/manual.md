@@ -110,18 +110,18 @@ Display2 の　Backgounrds のボタンで背景モデルや背景色を切り�
 1. VRMファイルをインポートします。
 2. VMCStudio シーンを開きます。
 3. 1 で生成したプレファブをシーンに配置します。
-4. Model Controller の Target に配置したキャラクターをドラッグして設定します。
+4. Model Controller の Target に配置したキャラクターモデルをドラッグして設定します。
 
 
 ## 表情をコントローラーから操作する(開発中)
 
-1. キャラクターに VMCBlendShapeProxy を追加します。
+1. キャラクターモデルに VMCBlendShapeProxy を追加します。
 2. Model Controller の VMCFaceController ブレンドシェイププリセット名に対応するコントローラー入力名を割り当てます。
 
 
 ## 手指をコントローラーから操作する(開発中)
 
-1. キャラクターに HandController を２つ追加します。
+1. キャラクターモデルに HandController を２つ追加します。
 2. 一方の Hand Type は Right Hnadに、もう片方は Left Hand に設定します。
 3. Model Controller の VoxHandsController でハンドプリセット名に対応するコントローラ入力名を割り当てます。
 
