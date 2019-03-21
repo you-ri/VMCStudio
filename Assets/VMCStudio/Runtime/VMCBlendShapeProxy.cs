@@ -228,6 +228,8 @@ namespace VMCStudio
 
         private void LateUpdate ()
         {
+            if (_merger == null) return;
+
             foreach (var entity in _binders) {
                 _merger.SetValue (entity.key, (float)entity.getter(this), false);
             }

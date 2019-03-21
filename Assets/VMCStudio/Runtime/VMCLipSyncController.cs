@@ -40,13 +40,16 @@ namespace VMCStudio
         [Tooltip ("「A」の口形のみにする")]
         public bool onlyVisemesA = true;
 
-        public int deviceIndex { get; set; } = 0;
+        [HideInInspector]
+        public int deviceIndex = 0;
 
         public string selectedDevice {
             get {
                 return Microphone.devices.Skip (deviceIndex).FirstOrDefault ();
             }
         }
+
+        private AudioClip _microphone;
 
         private bool micSelected { get { return !string.IsNullOrEmpty (selectedDevice); } }
 
@@ -71,6 +74,7 @@ namespace VMCStudio
         {
             if (_instancedAudioSource) { 
                 Destroy (_instancedAudioSource);
+                _instancedAudioSource = null;
             }
             blendShapeProxy = null;
             audioSource = null;
@@ -86,7 +90,7 @@ namespace VMCStudio
                 }
                 audioSource.playOnAwake = true;
                 audioSource.loop = true;
-                //audioSource.mute = true;
+                audioSource.clip = _microphone;
             }
         }
 
@@ -187,8 +191,6 @@ namespace VMCStudio
                 return;
             }
 
-            float maxVolume = 0;
-
             audioSource.clip.GetData (microphoneBuffer, 0);
             while (GetDataLength (microphoneBuffer.Length, head, position) > processBuffer.Length) {
                 var remain = microphoneBuffer.Length - head;
@@ -242,7 +244,8 @@ namespace VMCStudio
             if (micSelected == false) return;
 
             // Starts recording
-            audioSource.clip = Microphone.Start (selectedDevice, true, 1, kMicFrequency);
+            _microphone = Microphone.Start (selectedDevice, true, 1, kMicFrequency);
+            audioSource.clip = _microphone;
 
             // Wait until the recording has started
             // 入力デバイスによっては無限ループする可能性があるのでコメントアウト

@@ -13,14 +13,24 @@ namespace VMCStudioEditor
     [CustomEditor (typeof (VMCStudio.VMCLipSyncController))]
     class VMCLipSyncControllerEditor : Editor
     {
-        ReorderableList _ro;
+        SerializedProperty deviceIndex;
+
+        SerializedObject _so;
+
+        public void OnEnable ()
+        {
+            _so = new SerializedObject (target);
+
+            deviceIndex = _so.FindProperty ("deviceIndex");
+        }
 
         public override void OnInspectorGUI ()
         {
             base.OnInspectorGUI ();
             var t = (VMCLipSyncController)this.target;
 
-            t.deviceIndex = EditorGUILayout.Popup ("Device", t.deviceIndex, Microphone.devices);
+            deviceIndex.intValue = EditorGUILayout.Popup ("Device", deviceIndex.intValue, Microphone.devices);
+            _so.ApplyModifiedProperties ();
         }
     }
 
