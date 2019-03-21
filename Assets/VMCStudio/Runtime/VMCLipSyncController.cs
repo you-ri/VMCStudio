@@ -10,6 +10,9 @@ namespace VMCStudio
     [RequireComponent (typeof (VMCModelController))]
     public class VMCLipSyncController : LipSyncContextBase, IVMCModelController
     {
+        private const int kMicFrequency = 44100;
+        private const int kLengthSeconds = 1;
+
         static readonly BlendShapePreset[] kMouseBlendShapePresets = new BlendShapePreset[] {
             BlendShapePreset.A,
             BlendShapePreset.I,
@@ -20,32 +23,36 @@ namespace VMCStudio
         // Manually assign the skinned mesh renderer to this script
         public VMCBlendShapeProxy blendShapeProxy = null;
 
-        public float weightMagnitude = 1;
+        public int smoothAmount = 100;
 
-        // smoothing amount
-        public int SmoothAmount = 100;
-
-        public float gain = 1.0f;
-
+        [Tooltip ("ループバックを有効にする")]
         public bool enalbeLoopback = false;
 
-        public bool maxWeightEmphasis = false;
-        public bool maxWeightEnable = false;
-        public float WeightThreashold = 0;
-        public float MaxLevel = 1.0f;
+        [Tooltip ("最も高い口形素以外をゼロにする")]
+        public bool maxVisemesEmphasis = true;
 
-        [Tooltip ("「A」の口のみにする")]
-        public bool onlyMouseA = true;
+        [Tooltip ("口形素の倍率")]
+        public float visemesMultiply = 1.0f;
 
-        public string selectedDevice;
+        [Tooltip ("最小口形素のしきい値")]
+        public float visemesThreashold = 0;
 
-        private float sourceVolume = 100;
-        private bool micSelected = false;
+        [Tooltip ("「A」の口形のみにする")]
+        public bool onlyVisemesA = true;
+
+        public int deviceIndex { get; set; } = 0;
+
+        public string selectedDevice {
+            get {
+                return Microphone.devices.Skip (deviceIndex).FirstOrDefault ();
+            }
+        }
+
+        private bool micSelected { get { return !string.IsNullOrEmpty (selectedDevice); } }
+
         private int head = 0;
-        private const int micFrequency = 44100;
-        private const int lengthSeconds = 1;
         private float[] processBuffer = new float[1024];
-        private float[] microphoneBuffer = new float[lengthSeconds * micFrequency];
+        private float[] microphoneBuffer = new float[kLengthSeconds * kMicFrequency];
 
         /// <summary>
         /// Start this instance.
@@ -53,14 +60,9 @@ namespace VMCStudio
         void Start ()
         {
             // Send smoothing amount to context
-            this.Smoothing = SmoothAmount;
+            this.Smoothing = smoothAmount;
 
-            if (Microphone.devices.Length != 0 && string.IsNullOrWhiteSpace (selectedDevice)) {
-                selectedDevice = Microphone.devices.Last ().ToString ();
-                micSelected = true;
-                GetMicCaps ();
-            }
-
+            GetMicCaps ();
         }
 
         AudioSource _instancedAudioSource;
@@ -77,14 +79,14 @@ namespace VMCStudio
                 blendShapeProxy = target.GetComponent<VMCBlendShapeProxy> ();
 
                 var head = target.GetBoneTransform (HumanBodyBones.Head);
-                audioSource = head.GetComponent<AudioSource> ();
+                audioSource = GetComponent<AudioSource> ();
                 if (audioSource == null) {
                     _instancedAudioSource = head.gameObject.AddComponent<AudioSource> ();
                     audioSource = _instancedAudioSource;
                 }
                 audioSource.playOnAwake = true;
                 audioSource.loop = true;
-                audioSource.mute = true;
+                //audioSource.mute = true;
             }
         }
 
@@ -95,17 +97,17 @@ namespace VMCStudio
         {
             if (blendShapeProxy != null) {
 
+                if (audioSource != null) {
+                    ProcessMicrophoneAudioReadFast ();
+                }
+
                 // trap inputs and send signals to phoneme engine for testing purposes
                 // get the current viseme frame
-                OVRLipSync.Frame frame = GetCurrentPhonemeFrame ();
-                if (frame != null) {
-                    SetVisemeToMorphTarget (frame);
+                if (Frame != null) {
+                    SetVisemeToMorphTarget (Frame);
                 }
             }
 
-            if (audioSource != null) {
-                ProcessMicrophoneAudioReadFast ();
-            }
         }
 
         float[] _visemes;
@@ -115,31 +117,26 @@ namespace VMCStudio
         /// </summary>
         void SetVisemeToMorphTarget (OVRLipSync.Frame frame)
         {
-            if (_visemes == null) {
-                _visemes = new float[] {
-                    frame.Visemes[(int)OVRLipSync.Viseme.aa],
-                    frame.Visemes[(int)OVRLipSync.Viseme.ih],
-                    frame.Visemes[(int)OVRLipSync.Viseme.ou],
-                    frame.Visemes[(int)OVRLipSync.Viseme.E],
-                    frame.Visemes[(int)OVRLipSync.Viseme.oh],
-                };
-            }
+
+            _visemes = new float[] {
+                frame.Visemes[(int)OVRLipSync.Viseme.aa],
+                frame.Visemes[(int)OVRLipSync.Viseme.ih],
+                frame.Visemes[(int)OVRLipSync.Viseme.ou],
+                frame.Visemes[(int)OVRLipSync.Viseme.E],
+                frame.Visemes[(int)OVRLipSync.Viseme.oh],
+            };
 
             int maxIndex = 0;
             float maxVisemes = 0;
-            for (int i = 0; i < kMouseBlendShapePresets.Length; i++) {
-                if (_visemes[i] < WeightThreashold) _visemes[i] = 0;
+            for (int i = 0; i < _visemes.Length; i++) {
+                if (_visemes[i] < visemesThreashold) _visemes[i] = 0;
                 if (maxVisemes < _visemes[i]) {
                     maxIndex = i;
                     maxVisemes = _visemes[i];
                 }
             }
 
-            if (maxWeightEmphasis) {
-                _visemes[maxIndex] = Mathf.Clamp (_visemes[maxIndex] * 3, 0.0f, 1.0f);
-            }
-
-            if (maxWeightEnable) {
+            if (maxVisemesEmphasis) {
                 for (int i = 0; i < kMouseBlendShapePresets.Length; i++) {
                     if (i != maxIndex) _visemes[i] = 0.0f;
                 }
@@ -147,14 +144,13 @@ namespace VMCStudio
 
 
             // すべてを母音を「A」にまとめる。
-            if (onlyMouseA) {
-                blendShapeProxy.SetValue (kMouseBlendShapePresets[0], maxVisemes * MaxLevel);
+            if (onlyVisemesA) {
+                blendShapeProxy.SetValue (kMouseBlendShapePresets[0], maxVisemes * visemesMultiply);
             }
             /// A, I, U, E, O のそれぞれに反映する。
             else {
                 for (int i = 0; i < kMouseBlendShapePresets.Length; i++) {
-                    _visemes[i] *= MaxLevel;
-                    blendShapeProxy.SetValue (kMouseBlendShapePresets[i], _visemes[i]);
+                    blendShapeProxy.SetValue (kMouseBlendShapePresets[i], _visemes[i] * visemesMultiply);
                 }
             }
         }
@@ -166,7 +162,7 @@ namespace VMCStudio
         /// <param name="channels">Channels.</param>
         void OnAudioFilterRead (float[] data, int channels)
         {
-            if (enalbeLoopback) {
+            if (!enalbeLoopback) {
                 // 音がループバックしないように消去
                 for (int i = 0; i < data.Length; ++i)
                     data[i] = data[i] * 0.0f;
@@ -179,36 +175,38 @@ namespace VMCStudio
         /// </summary>
         void ProcessMicrophoneAudioReadFast ()
         {
-            if (string.IsNullOrEmpty (selectedDevice) == false) {
-                audioSource.volume = (sourceVolume / 100);
-                if (!Microphone.IsRecording (selectedDevice)) {
-                    StartMicrophone ();
+            if (!micSelected) return;
+
+            audioSource.volume = 1;
+            if (!Microphone.IsRecording (selectedDevice)) {
+                StartMicrophone ();
+            }
+
+            var position = Microphone.GetPosition (selectedDevice);
+            if (position < 0 || head == position) {
+                return;
+            }
+
+            float maxVolume = 0;
+
+            audioSource.clip.GetData (microphoneBuffer, 0);
+            while (GetDataLength (microphoneBuffer.Length, head, position) > processBuffer.Length) {
+                var remain = microphoneBuffer.Length - head;
+                if (remain < processBuffer.Length) {
+                    Array.Copy (microphoneBuffer, head, processBuffer, 0, remain);
+                    Array.Copy (microphoneBuffer, 0, processBuffer, remain, processBuffer.Length - remain);
+                }
+                else {
+                    Array.Copy (microphoneBuffer, head, processBuffer, 0, processBuffer.Length);
                 }
 
-                var position = Microphone.GetPosition (selectedDevice);
-                if (position < 0 || head == position) {
-                    return;
+                OVRLipSync.ProcessFrame (Context, processBuffer, Frame);
+                head += processBuffer.Length;
+                if (head > microphoneBuffer.Length) {
+                    head -= microphoneBuffer.Length;
                 }
 
-                audioSource.clip.GetData (microphoneBuffer, 0);
-                while (GetDataLength (microphoneBuffer.Length, head, position) > processBuffer.Length) {
-                    var remain = microphoneBuffer.Length - head;
-                    if (remain < processBuffer.Length) {
-                        Array.Copy (microphoneBuffer, head, processBuffer, 0, remain);
-                        Array.Copy (microphoneBuffer, 0, processBuffer, remain, processBuffer.Length - remain);
-                    }
-                    else {
-                        Array.Copy (microphoneBuffer, head, processBuffer, 0, processBuffer.Length);
-                    }
-
-                    OVRLipSync.ProcessFrame (Context, processBuffer, Frame);
-
-                    head += processBuffer.Length;
-                    if (head > microphoneBuffer.Length) {
-                        head -= microphoneBuffer.Length;
-                    }
-                    break;
-                }
+                //maxVolume = Math.Max (processBuffer.Max (), maxVolume);
             }
         }
 
@@ -237,7 +235,6 @@ namespace VMCStudio
                 minFreq = 44100;
                 maxFreq = 44100;
             }
-
         }
 
         public void StartMicrophone ()
@@ -245,7 +242,7 @@ namespace VMCStudio
             if (micSelected == false) return;
 
             // Starts recording
-            audioSource.clip = Microphone.Start (selectedDevice, true, 1, micFrequency);
+            audioSource.clip = Microphone.Start (selectedDevice, true, 1, kMicFrequency);
 
             // Wait until the recording has started
             // 入力デバイスによっては無限ループする可能性があるのでコメントアウト

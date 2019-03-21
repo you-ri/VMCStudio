@@ -140,15 +140,6 @@ public class LipSyncContextBase : MonoBehaviour
     // * * * * * * * * * * * * *
     // Public Functions
 
-    /// <summary>
-    /// Gets the current phoneme frame (lock and copy current frame to caller frame)
-    /// </summary>
-    /// <returns>error code</returns>
-    /// <param name="inFrame">In frame.</param>
-    public OVRLipSync.Frame GetCurrentPhonemeFrame()
-    {
-        return frame;
-    }
 
     public void SetVisemeBlend(int viseme, int amount)
     {
