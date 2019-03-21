@@ -198,16 +198,10 @@ namespace VMCStudio
         }
 
 
-
         public static IEnumerator CalibrateScaled (Transform realTrackerRoot, Transform handTrackerRoot, Transform headTrackerRoot, Transform footTrackerRoot,
             VRIK ik, Settings settings, Vector3 LeftHandOffset, Vector3 RightHandOffset, float pelvisOffset,
             Transform HMDTransform, Transform PelvisTransform = null, Transform LeftHandTransform = null, Transform RightHandTransform = null, Transform LeftFootTransform = null, Transform RightFootTransform = null, Transform LeftElbowTransform = null, Transform RightElbowTransform = null, Transform LeftKneeTransform = null, Transform RightKneeTransform = null)
         {
-            //settings.headOffset = new Vector3 (0, -0.15f, -0.15f);
-            //Calibrate (ik, settings, LeftHandOffset, RightHandOffset, HMDTransform, PelvisTransform, LeftHandTransform, RightHandTransform, LeftFootTransform, RightFootTransform);
-            //yield return null;
-            //yield break;
-
             if (!ik.solver.initiated) {
                 Debug.LogError ("Can not calibrate before VRIK has initiated.");
                 yield break;
@@ -337,7 +331,7 @@ namespace VMCStudio
             var hscale = realHandHeight / modelHandHeight;
             ik.references.root.localScale = new Vector3 (hscale, hscale, hscale);
 
-            //VRMモデルのコライダーがスケールについてこないため、すべて再設定
+            // VRMモデルのコライダーがスケールについてこないため、すべて再設定
             var springBoneColiderGroups = ik.references.root.GetComponentsInChildren<VRM.VRMSpringBoneColliderGroup> ();
             foreach (var springBoneColiderGroup in springBoneColiderGroups) {
                 foreach (var colider in springBoneColiderGroup.Colliders) {
@@ -502,10 +496,9 @@ namespace VMCStudio
                 ik.solver.rightLeg.bendGoalWeight = 1.0f;
             }
 
-            // Root controller
-            bool addRootController = PelvisTransform != null || (LeftFootTransform != null && RightFootTransform != null);
+            // 腰と両足がトラッキングしている場合のみVRIKRootControllerを追加する
+            bool addRootController = PelvisTransform != null && LeftFootTransform != null && RightFootTransform != null;
             var rootController = ik.references.root.GetComponent<VRIKRootController> ();
-
             if (addRootController) {
                 if (rootController == null) rootController = ik.references.root.gameObject.AddComponent<VRIKRootController> ();
                 rootController.Calibrate ();

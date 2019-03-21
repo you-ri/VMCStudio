@@ -218,27 +218,20 @@ namespace VMCStudio
 
         public void OnModelChanged (Animator target)
         {
-            // ダミーからのリターゲットを設定
-
             // リターゲット設定
             if (_refs.dummy.GetComponent<HumanoidRetargetRuntimeController> () != null) {
                 _refs.dummy.GetComponent<HumanoidRetargetRuntimeController> ().SetTarget(target);
             }
 
             if (target != null) {
-                foreach (var renderer in target.GetComponentsInChildren<SkinnedMeshRenderer> (true)) {
-                    renderer.updateWhenOffscreen = true;
-                }
-
-                SetupVRM (target);
+                SetupTargetModel (target);
             }
         }
 
-        private void UpdateHandRotation ()
+        private void _UpdateHandRotation ()
         {
             //return; // return for debug
             if (dummyVrik == null) return;
-
 
             Transform leftHandAdjusterTransform = dummyVrik.solver.leftArm.target;
             Transform rightHandAdjusterTransform = dummyVrik.solver.rightArm.target;
@@ -250,7 +243,7 @@ namespace VMCStudio
         }
 
 
-        private Vector3 fixKneeBone (Transform UpperLeg, Transform Knee, Transform Ankle)
+        private Vector3 _FixKneeBone (Transform UpperLeg, Transform Knee, Transform Ankle)
         {
             var a = UpperLeg.position;
             var b = Ankle.position;
@@ -262,7 +255,7 @@ namespace VMCStudio
             return offset;
         }
 
-        private Vector3 fixPelvisBone (Transform Spine, Transform Pelvis)
+        private Vector3 _FixPelvisBone (Transform Spine, Transform Pelvis)
         {
             if (Spine.position.z < Pelvis.position.z) {
                 return Vector3.zero;
@@ -277,7 +270,7 @@ namespace VMCStudio
         }
 
 
-        private void unfixKneeBone (Vector3 offset, Transform Knee, Transform Ankle)
+        private void _UnfixKneeBone (Vector3 offset, Transform Knee, Transform Ankle)
         {
             //return;
             Knee.position += offset;
@@ -290,9 +283,9 @@ namespace VMCStudio
             var leftOffset = Vector3.zero;
             var rightOffset = Vector3.zero;
             if (this.dummyAnimator != null) {
-                leftOffset = fixKneeBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftUpperLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftLowerLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftFoot));
-                rightOffset = fixKneeBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightUpperLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightLowerLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightFoot));
-                fixPelvisBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.Spine), this.dummyAnimator.GetBoneTransform (HumanBodyBones.Hips));
+                leftOffset = _FixKneeBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftUpperLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftLowerLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.LeftFoot));
+                rightOffset = _FixKneeBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightUpperLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightLowerLeg), this.dummyAnimator.GetBoneTransform (HumanBodyBones.RightFoot));
+                _FixPelvisBone (this.dummyAnimator.GetBoneTransform (HumanBodyBones.Spine), this.dummyAnimator.GetBoneTransform (HumanBodyBones.Hips));
             }
 
             dummyVrik = animator.GetComponent<VRIK> ();
@@ -380,56 +373,41 @@ namespace VMCStudio
 
             // IK 機能を無効化する
             var vrik = dummyAnimator.GetComponent<VRIK> ();
-            var vrikRootController = dummyAnimator.GetComponent<VRIKRootController> ();
-
             vrik.solver.IKPositionWeight = 0;
-            if (vrikRootController != null) {
-                vrikRootController.enabled = false;
-            }
 
-            //キャリブレーションではTポーズであることが前提になるため、ここで保存したTポーズを復元する
-            _teePoseMemory.Resotre ();
+            // VRIKRootController を削除する
+            var vrikRootController = dummyAnimator.GetComponent<VRIKRootController> ();
+            if (vrikRootController != null) {
+                GameObject.Destroy (vrikRootController);
+            }
         }
 
         public IEnumerator Calibrate ()
         {
             var settings = new RootMotion.FinalIK.VRIKCalibrator.Settings ();
 
-            yield return new WaitForEndOfFrame ();
-
-            var leftHandOffset = Vector3.zero;
-            var rightHandOffset = Vector3.zero;
-
             //トラッカー
             //xをプラス方向に動かすとトラッカーの左(LEDを上に見たとき)に進む
             //yをプラス方向に動かすとトラッカーの上(LED方向)に進む
             //zをマイナス方向に動かすとトラッカーの底面に向かって進む
 
-            //if (CurrentSettings.LeftHand.Item1 == ETrackedDeviceClass.GenericTracker) {
             //角度補正(左手なら右のトラッカーに向けた)後
             //xを＋方向は体の正面に向かって進む
             //yを＋方向は体の上(天井方向)に向かって進む
             //zを＋方向は体中心(左手なら右手の方向)に向かって進む
-            leftHandOffset = new Vector3 (1.0f, leftHandTrackerOffsetToBottom, leftHandTrackerOffsetToBodySide); // Vector3 (IsEnable, ToTrackerBottom, ToBodySide)
+            var leftHandOffset = new Vector3 (1.0f, leftHandTrackerOffsetToBottom, leftHandTrackerOffsetToBodySide); // Vector3 (IsEnable, ToTrackerBottom, ToBodySide)
                                                                                                                  //}
                                                                                                                  //if (CurrentSettings.RightHand.Item1 == ETrackedDeviceClass.GenericTracker) {
                                                                                                                  //角度補正(左手なら右のトラッカーに向けた)後
                                                                                                                  //xを－方向は体の正面に向かって進む
                                                                                                                  //yを＋方向は体の上(天井方向)に向かって進む
                                                                                                                  //zを＋方向は体中心(左手なら右手の方向)に向かって進む
-            rightHandOffset = new Vector3 (1.0f, rightHandTrackerOffsetToBottom, rightHandTrackerOffsetToBodySide); // Vector3 (IsEnable, ToTrackerBottom, ToBodySide)
+            var rightHandOffset = new Vector3 (1.0f, rightHandTrackerOffsetToBottom, rightHandTrackerOffsetToBodySide); // Vector3 (IsEnable, ToTrackerBottom, ToBodySide)
                                                                                                                     //}
                                                                                                                     //if (calibrateType == PipeCommands.CalibrateType.Default) {
             yield return Calibrator.CalibrateScaled (_refs.RealTrackerRoot, _refs.HandTrackerRoot, _refs.HeadTrackerRoot, _refs.PelvisTrackerRoot, 
                 dummyVrik, settings, leftHandOffset, rightHandOffset, pelvisTrackerAdjustmentToBottom,
                 _data.headTracker, _data.bodyTracker, _data.leftHandTracker, _data.rightHandTracker, _data.leftFootTracker, _data.rightFootTracker, _data.leftElbowTracker, _data.rightElbowTracker, _data.leftKneeTracker, _data.rightKneeTracker);
-            //}
-            //else if (calibrateType == PipeCommands.CalibrateType.FixedHand) {
-            //    yield return Calibrator.CalibrateFixedHand (RealTrackerRoot, HandTrackerRoot, HeadTrackerRoot, PelvisTrackerRoot, vrik, settings, leftHandOffset, rightHandOffset, headTracker, bodyTracker, leftHandTracker, rightHandTracker, leftFootTracker, rightFootTracker, leftElbowTracker, rightElbowTracker, leftKneeTracker, rightKneeTracker);
-            //}
-            //else if (calibrateType == PipeCommands.CalibrateType.FixedHandWithGround) {
-            //    yield return Calibrator.CalibrateFixedHandWithGround (RealTrackerRoot, HandTrackerRoot, HeadTrackerRoot, PelvisTrackerRoot, vrik, settings, leftHandOffset, rightHandOffset, headTracker, bodyTracker, leftHandTracker, rightHandTracker, leftFootTracker, rightFootTracker, leftElbowTracker, rightElbowTracker, leftKneeTracker, rightKneeTracker);
-            //}
 
             dummyVrik.solver.IKPositionWeight = 1.0f;
             if (_refs.handler.Trackers.Count == 1) {
@@ -450,7 +428,7 @@ namespace VMCStudio
             //トラッカー位置の非表示
             _refs.RealTrackerRoot.gameObject.SetActive (false);
 
-            UpdateHandRotation ();
+            _UpdateHandRotation ();
         }
 
         public void AddPointGizmo (Transform parent)
@@ -462,9 +440,14 @@ namespace VMCStudio
         }
 
 
-        public void SetupVRM (Animator targetAnimator)
+        public void SetupTargetModel (Animator targetAnimator)
         {
             var dummyAnimator = _refs.dummy;
+
+            // すべてのスキンメッシュの updateWhnOfscreen を true に
+            foreach (var renderer in targetAnimator.GetComponentsInChildren<SkinnedMeshRenderer> (true)) {
+                renderer.updateWhenOffscreen = true;
+            }
 
             // キャリブレーション後処理
             var vrikRootController = dummyVrik.GetComponent<VRIKRootController> ();
