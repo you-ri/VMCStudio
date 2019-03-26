@@ -38,6 +38,7 @@ sysinfo.txt
 
 # Projects
 /[Bb]in/
+/[Ss]ite/
 /Assets/_TerrainAutoUpgrade*
 /Assets/Recordings*
 
