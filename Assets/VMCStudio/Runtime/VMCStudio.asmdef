@@ -1,0 +1,21 @@
+{
+    "name": "VMCStudio",
+    "references": [
+        "Cinemachine",
+        "Unity.TextMeshPro",
+        "VRM",
+        "ExternalPlugins",
+        "SteamVR",
+        "Unity.Recorder",
+        "Unity.Recorder.Editor",
+        "Klak.Ndi"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
