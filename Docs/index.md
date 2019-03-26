@@ -31,6 +31,10 @@ Project Settings の Script Execution Order で Final IK 関連のコンポー�
 ![](https://imgur.com/IP16UCK.png)
 
 インポート後 FBXAnimationExporterWindow でスクリプトエラーが発生して動かない場合、Package Manager から FBX Exporter を一旦削除して、再インストールすると通ります。
+
+!!! Warning
+    FBX Exporter がパッケージのリストに出ない場合は All packages を選択し、Advanced のタブを押して Show preview packages のチェックをオンにしてください。
+
 FBX Exporter 2.0.1-preview.5 にて動作確認しています。
 
 ## 謝辞
