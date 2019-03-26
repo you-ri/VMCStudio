@@ -20,13 +20,10 @@ namespace VMCStudio
             BlendShapePreset.E,
             BlendShapePreset.O,
         };
-        // Manually assign the skinned mesh renderer to this script
-        public VMCBlendShapeProxy blendShapeProxy = null;
+
+        public VMCBlendShapeProxy blendShapeProxy { get; set; }
 
         public int smoothAmount = 100;
-
-        [Tooltip ("ループバックを有効にする")]
-        public bool enalbeLoopback = false;
 
         [Tooltip ("最も高い口形素以外をゼロにする")]
         public bool maxVisemesEmphasis = true;
@@ -40,8 +37,15 @@ namespace VMCStudio
         [Tooltip ("「A」の口形のみにする")]
         public bool onlyVisemesA = true;
 
+        [Tooltip ("ミュート")]
+        public bool mute = true;
+
+        [Tooltip ("音声入力にマイクデイバイスを使用する")]
+        public bool useMicrophone = true;
+
         [HideInInspector]
         public int deviceIndex = 0;
+
 
         public string selectedDevice {
             get {
@@ -56,6 +60,15 @@ namespace VMCStudio
         private int head = 0;
         private float[] processBuffer = new float[1024];
         private float[] microphoneBuffer = new float[kLengthSeconds * kMicFrequency];
+
+        void Construction ()
+        {
+            if (audioSource != null) {
+                audioSource.playOnAwake = false;
+                audioSource.loop = useMicrophone;
+                audioSource.mute = mute;
+            }
+        }
 
         /// <summary>
         /// Start this instance.
@@ -92,6 +105,13 @@ namespace VMCStudio
                 audioSource.loop = true;
                 audioSource.clip = _microphone;
             }
+
+            Construction ();
+        }
+
+        void OnValidate()
+        {
+            Construction ();
         }
 
         /// <summary>
@@ -101,7 +121,7 @@ namespace VMCStudio
         {
             if (blendShapeProxy != null) {
 
-                if (audioSource != null) {
+                if (audioSource != null && useMicrophone) {
                     ProcessMicrophoneAudioReadFast ();
                 }
 
@@ -166,10 +186,17 @@ namespace VMCStudio
         /// <param name="channels">Channels.</param>
         void OnAudioFilterRead (float[] data, int channels)
         {
-            if (!enalbeLoopback) {
+            if (mute) {
                 // 音がループバックしないように消去
                 for (int i = 0; i < data.Length; ++i)
-                    data[i] = data[i] * 0.0f;
+                    data[i] = 0.0f;
+            }
+            if (!useMicrophone) {
+                lock (this) {
+                    if (Context != 0) {
+                        OVRLipSync.ProcessFrameInterleaved (Context, data, Frame);
+                    }
+                }
             }
         }
 
@@ -181,7 +208,6 @@ namespace VMCStudio
         {
             if (!micSelected) return;
 
-            audioSource.volume = 1;
             if (!Microphone.IsRecording (selectedDevice)) {
                 StartMicrophone ();
             }

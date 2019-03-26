@@ -58,6 +58,7 @@ namespace VMCStudio
             float battery = _tracker.GetBatteryPercentage ();
 
             refs.labelText.text = serial;
+            //refs.headText.text = $" {_tracker.deviceIndex} {_tracker.trackingPoint.ToString ()}";
             refs.headText.text = _tracker.trackingPoint.ToString ();
             GetComponent<Image> ().color = _tracker.valid ? Color.white : Color.gray;
             if (_tracker.GetBatteryPercentage () <= 20) {

@@ -10,9 +10,7 @@ namespace VMCStudio
     [RequireComponent (typeof (VMCModelController))]
     public class VMCBlinker : MonoBehaviour, IVMCModelController
     {
-        [SerializeField]
-        public VMCBlendShapeProxy blendShapes;
-
+        public VMCBlendShapeProxy blendShapeProxy { get; set; }
 
         [SerializeField]
         float m_interVal = 5.0f;
@@ -46,12 +44,12 @@ namespace VMCStudio
 
         private void Awake ()
         {
-            if (blendShapes == null) blendShapes = GetComponent<VMCBlendShapeProxy> ();
+            if (blendShapeProxy == null) blendShapeProxy = GetComponent<VMCBlendShapeProxy> ();
         }
 
         private void OnEnable ()
         {
-            if (blendShapes == null) return;
+            if (blendShapeProxy == null) return;
             _coroutine = StartCoroutine (BlinkRoutine ());
         }
 
@@ -63,10 +61,20 @@ namespace VMCStudio
             }
         }
 
+        public void OnModelChanged (Animator target)
+        {
+            StopAllCoroutines ();
+            blendShapeProxy = null;
+
+            if (target != null) {
+                blendShapeProxy = target.GetComponent<VMCBlendShapeProxy> ();
+                _coroutine = StartCoroutine (BlinkRoutine ());
+            }
+        }
 
         protected IEnumerator BlinkRoutine()
         {
-            while (blendShapes != null)
+            while (blendShapeProxy != null)
             {
                 var waitTime = Time.time + Random.value * m_interVal;
                 while (waitTime > Time.time)
@@ -90,10 +98,10 @@ namespace VMCStudio
                         break;
                     }
 
-                    blendShapes.SetValue (BlendShapePreset.Blink, Mathf.Clamp01(value));
+                    blendShapeProxy.SetValue (BlendShapePreset.Blink, Mathf.Clamp01(value));
                     yield return null;
                 }
-                blendShapes.SetValue (BlendShapePreset.Blink, 1.0f);
+                blendShapeProxy.SetValue (BlendShapePreset.Blink, 1.0f);
 
                 // wait...
                 yield return new WaitForSeconds(_closingTime);
@@ -109,22 +117,13 @@ namespace VMCStudio
                         break;
                     }
 
-                    blendShapes.SetValue (BlendShapePreset.Blink, Mathf.Clamp01 (value));
+                    blendShapeProxy.SetValue (BlendShapePreset.Blink, Mathf.Clamp01 (value));
                     yield return null;
                 }
-                blendShapes.SetValue (BlendShapePreset.Blink, 0);
+                blendShapeProxy.SetValue (BlendShapePreset.Blink, 0);
             }
         }
 
-        public void OnModelChanged (Animator target)
-        {
-            StopAllCoroutines ();
-            blendShapes = null;
 
-            if (target != null) {
-                blendShapes = target.GetComponent<VMCBlendShapeProxy> ();
-                _coroutine = StartCoroutine (BlinkRoutine ());
-            }
-        }
     }
 }

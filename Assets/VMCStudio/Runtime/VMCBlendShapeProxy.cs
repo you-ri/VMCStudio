@@ -188,12 +188,6 @@ namespace VMCStudio
                     var blendShapeEntityAttr = attr as BlendShapeKeyAttribute;
                     if (blendShapeEntityAttr == null) continue;
 
-#if false
-                    Func<VMCBlendShapeProxy, string> getDelegate =
-                        (Func<VMCBlendShapeProxy, float>)Delegate.CreateDelegate (
-                                 typeof (Func<VMCBlendShapeProxy, float>),
-                                 info.GetValue (nonPublic: true));
-#endif
                     entities.Add (
                         new BlendShapeKeyBinder (
                             blendShapeEntityAttr.name,
@@ -210,18 +204,18 @@ namespace VMCStudio
 
         public void _Destruction ()
         {
-            if (_merger != null) {
+            if (_merger != null && blendShapeAvatar != null) {
                 var validatedBlendShapeAvatarClips = blendShapeAvatar.Clips.Where (t => t != null);  // ここで NULL を排除しなとエラーが発生する。VRM.BlendShapeMerger のバグ？
                 _merger.RestoreMaterialInitialValues (validatedBlendShapeAvatarClips);
-                _merger = null;
             }
+            _merger = null;
             _binders = null;
         }
 
         private void Start ()
         {
-            if (GetComponent<VRM.VRMBlendShapeProxy> ()) {
-                GetComponent<VRM.VRMBlendShapeProxy> ().enabled = false;
+            if (blendShapeAvatar == null) {
+                Debug.LogWarning ("VMCBlendShapeProxy: Disable the blend shape feature. Please set BlendShapeAvatar.");
             }
         }
 

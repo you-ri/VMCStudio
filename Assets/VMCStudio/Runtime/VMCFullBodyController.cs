@@ -86,10 +86,11 @@ namespace VMCStudio
     [RequireComponent (typeof (VMCModelController))]
     public class VMCFullBodyController : MonoBehaviour, IVMCModelController, ICalibratable, IRecenterble
     {
-        [System.Serializable]
-        class DebugParameters
+        [Serializable]
+        public enum CalibrationType
         {
-            public bool disableTrackers = false;
+            HandsHeightReference,
+            VirtualMotionCaptureScaled,
         }
 
         [Serializable]
@@ -104,7 +105,6 @@ namespace VMCStudio
             public Transform PelvisTrackerRoot;
             public Transform RealTrackerRoot;
         }
-
 
         [Serializable]
         class Data
@@ -125,20 +125,23 @@ namespace VMCStudio
 
         private Animator dummyAnimator { get { return _refs.dummy; } }
 
-        [Tooltip("キャリブレーション後をスケールをアクターと合わせる。")]
+        [Tooltip ("キャリブレーション手法の種類\nHandsHeightReference\n... 両手の高さ基準にスケーリング\nVirtualMotionCaptureScaled\n... 両手の高さと幅を基準に非対称にスケーリング")]
+        public CalibrationType calibrationType = CalibrationType.HandsHeightReference;
+
+        [Tooltip("キャリブレーション後、モデルスケールをアクターと一致させる")]
         public bool enableScaleAdjust = false;
 
         [Header ("Tracker Adjustment")]
         [Tooltip ("腰トラッカーの重力方向にずらす。どうしても腰が曲がる場合値を大きくすると効果的。単位はm")]
         public float pelvisTrackerAdjustmentToBottom = 0.1f;
 
-        [Tooltip ("左手トラッカーから手首中心までの肩方向の距離。単位はm")]
+        [Tooltip ("左手トラッカーから手首中心までの肩方向の距離。単位はm。コントローラーを持つ場合 0.1  トラッカーを手首につける場合 -0.05")]
         public float leftHandTrackerOffsetToBodySide = 0.05f;
 
         [Tooltip ("左手トラッカーから手首中心までの底面方向の距離。単位はm")]
         public float leftHandTrackerOffsetToBottom = 0.02f;
 
-        [Tooltip ("右手トラッカーから手首中心までの肩方向の距離。単位はm")]
+        [Tooltip ("右手トラッカーから手首中心までの肩方向の距離。単位はm。コントローラーを持つ場合 0.1 トラッカーを手首につける場合 -0.05")]
         public float rightHandTrackerOffsetToBodySide = 0.05f;
 
         [Tooltip ("右手トラッカーから手首中心までの底面方向の距離。単位はm")]
@@ -163,12 +166,11 @@ namespace VMCStudio
 
         [SerializeField]
         [HideInInspector]
-        private Data _data;
+        bool _disableTrackers = false;
 
-        /// <summary>
-        /// Tポーズの記憶
-        /// </summary>
-        PoseMemory _teePoseMemory = new PoseMemory ();
+        [SerializeField]
+        [HideInInspector]
+        Data _data;
 
         public Animator dummy { get { return _refs.dummy; } }
 
@@ -179,10 +181,6 @@ namespace VMCStudio
         [Tooltip ("トラッカー定義リスト")]
         [HideInInspector]
         public List<TrackerState> trackers;
-
-        [SerializeField]
-        [FormerlySerializedAs ("debug")]
-        DebugParameters _debug;
 
         private HumanPoseHandler _dummyPoseHandler;
 
@@ -196,7 +194,7 @@ namespace VMCStudio
         {
             _dummyPoseHandler = new HumanPoseHandler (dummyAnimator.avatar, dummyAnimator.transform);
 
-            _teePoseMemory.Store (_refs.dummy.gameObject);
+            //_teePoseMemory.Store (_refs.dummy.gameObject);
 
             // リアルトラッカーの位置を初期化
             foreach (Transform t in _refs.RealTrackerRoot) {
@@ -340,7 +338,7 @@ namespace VMCStudio
         {
             var _controlWPFWindow = this;
             // トラッカー割当
-            if (!_debug.disableTrackers) {
+            if (!_disableTrackers) {
                 _data.headTracker = GetTrackerTransformBySerialNumber (GetTrackerName (TrackingPoint.Head));
                 _data.leftHandTracker = GetTrackerTransformBySerialNumber (GetTrackerName (TrackingPoint.LeftHand));
                 _data.rightHandTracker = GetTrackerTransformBySerialNumber (GetTrackerName (TrackingPoint.RightHand));
@@ -403,11 +401,19 @@ namespace VMCStudio
                                                                                                                  //yを＋方向は体の上(天井方向)に向かって進む
                                                                                                                  //zを＋方向は体中心(左手なら右手の方向)に向かって進む
             var rightHandOffset = new Vector3 (1.0f, rightHandTrackerOffsetToBottom, rightHandTrackerOffsetToBodySide); // Vector3 (IsEnable, ToTrackerBottom, ToBodySide)
-                                                                                                                    //}
-                                                                                                                    //if (calibrateType == PipeCommands.CalibrateType.Default) {
-            yield return Calibrator.CalibrateScaled (_refs.RealTrackerRoot, _refs.HandTrackerRoot, _refs.HeadTrackerRoot, _refs.PelvisTrackerRoot, 
-                dummyVrik, settings, leftHandOffset, rightHandOffset, pelvisTrackerAdjustmentToBottom,
-                _data.headTracker, _data.bodyTracker, _data.leftHandTracker, _data.rightHandTracker, _data.leftFootTracker, _data.rightFootTracker, _data.leftElbowTracker, _data.rightElbowTracker, _data.leftKneeTracker, _data.rightKneeTracker);
+                                                                                                                        //}
+                                                                                                                        //if (calibrateType == PipeCommands.CalibrateType.Default) {
+
+            if (calibrationType == CalibrationType.VirtualMotionCaptureScaled) {
+                yield return Calibrator.CalibrateScaled (_refs.RealTrackerRoot, _refs.HandTrackerRoot, _refs.HeadTrackerRoot, _refs.PelvisTrackerRoot,
+                    dummyVrik, settings, leftHandOffset, rightHandOffset, pelvisTrackerAdjustmentToBottom,
+                    _data.headTracker, _data.bodyTracker, _data.leftHandTracker, _data.rightHandTracker, _data.leftFootTracker, _data.rightFootTracker, _data.leftElbowTracker, _data.rightElbowTracker, _data.leftKneeTracker, _data.rightKneeTracker);
+            }
+            else {
+                yield return Calibrator.Calibrate (_refs.RealTrackerRoot, _refs.HandTrackerRoot, _refs.HeadTrackerRoot, _refs.PelvisTrackerRoot,
+                    dummyVrik, settings, leftHandOffset, rightHandOffset, pelvisTrackerAdjustmentToBottom,
+                    _data.headTracker, _data.bodyTracker, _data.leftHandTracker, _data.rightHandTracker, _data.leftFootTracker, _data.rightFootTracker, _data.leftElbowTracker, _data.rightElbowTracker, _data.leftKneeTracker, _data.rightKneeTracker);
+            }
 
             dummyVrik.solver.IKPositionWeight = 1.0f;
             if (_refs.handler.Trackers.Count == 1) {

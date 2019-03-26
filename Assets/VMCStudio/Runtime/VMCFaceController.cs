@@ -113,7 +113,7 @@ namespace VMCStudio
                     _lookAtHead = blendShapeProxy.GetComponent<VRMLookAtHead> ();
                     Debug.Assert (_lookAtHead != null);
 
-                    blinker.blendShapes = blendShapeProxy;
+                    blinker.blendShapeProxy = blendShapeProxy;
                 }
             }
         }

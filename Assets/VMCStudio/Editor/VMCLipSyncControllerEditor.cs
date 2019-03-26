@@ -15,13 +15,10 @@ namespace VMCStudioEditor
     {
         SerializedProperty deviceIndex;
 
-        SerializedObject _so;
-
         public void OnEnable ()
         {
-            _so = new SerializedObject (target);
 
-            deviceIndex = _so.FindProperty ("deviceIndex");
+            deviceIndex = serializedObject.FindProperty ("deviceIndex");
         }
 
         public override void OnInspectorGUI ()
@@ -29,8 +26,10 @@ namespace VMCStudioEditor
             base.OnInspectorGUI ();
             var t = (VMCLipSyncController)this.target;
 
-            deviceIndex.intValue = EditorGUILayout.Popup ("Device", deviceIndex.intValue, Microphone.devices);
-            _so.ApplyModifiedProperties ();
+            if (t.useMicrophone) {
+                deviceIndex.intValue = EditorGUILayout.Popup ("Device", deviceIndex.intValue, Microphone.devices);
+            }
+            serializedObject.ApplyModifiedProperties ();
         }
     }
 

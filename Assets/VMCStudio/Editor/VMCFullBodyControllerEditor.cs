@@ -56,8 +56,25 @@ namespace VMCStudioEditor
             // DoLayoutListを呼ばないと最終的に表示しない
             _ro.DoLayoutList ();
 
+            _isOpenDebug = EditorGUILayout.Foldout (_isOpenDebug, "Debug");
+            if (_isOpenDebug) {
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_disableTrackers"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.headTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.leftHandTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.rightHandTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.bodyTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.leftFootTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.rightFootTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.leftElbowTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.rightElbowTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.leftKneeTracker"));
+                EditorGUILayout.PropertyField (this.serializedObject.FindProperty ("_data.rightKneeTracker"));
+            }
+
             serializedObject.ApplyModifiedProperties ();
         }
+
+        bool _isOpenDebug = false;
     }
 
 }
