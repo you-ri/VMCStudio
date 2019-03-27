@@ -29,7 +29,7 @@ VIVE 基本セットのみで可能な組み合わせです。上半身のみな
 
 ## 体への固定方法
 
-こちらのサイトを参考にしてみたください。
+こちらのサイトを参考にしてみてください。
 [HTC vive のトラッカーを固定させる方法メモ](http://sumoch1.hatenablog.com/entry/vive-tracker)
 
 他にも専用の固定ベルトを使う方法があります。[Akiba PC Hotline! VIVEトラッカーを腰に固定できるベルトが入荷](https://akiba-pc.watch.impress.co.jp/docs/news/news/1153909.html)

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Recorder;
 using UnityEditor.Recorder.Input;
+using System.IO;
 
 namespace VMCStudio
 {
@@ -68,6 +69,7 @@ namespace VMCStudio
                 animationRecorder.animationInputSettings.AddComponentToRecord (typeof (VMCBlendShapeProxy));
             }
 
+            SafeCreateDirectory ("Assets/Recordings");
 
             var recordingAnimationClipPath = $"Assets/Recordings/{target.name}_{_startTime:yyMMddHHmmss}_{RecordedObjectEntity.take}";
             recordingAnimationClipPath = AssetDatabase.GenerateUniqueAssetPath (recordingAnimationClipPath);
@@ -100,6 +102,15 @@ namespace VMCStudio
             _onEndRecorded ();
 
             RecordedObjectEntity.take += 1;
+        }
+
+        /// <summary>
+        /// 指定したパスにディレクトリが存在しない場合
+        /// すべてのディレクトリとサブディレクトリを作成します
+        /// </summary>
+        public static DirectoryInfo SafeCreateDirectory (string path)
+        {
+            return Directory.Exists (path) ? null : Directory.CreateDirectory (path);
         }
     }
 
