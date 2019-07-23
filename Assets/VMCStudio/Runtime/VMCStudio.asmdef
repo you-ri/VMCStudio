@@ -6,9 +6,9 @@
         "VRM",
         "ExternalPlugins",
         "SteamVR",
+        "Klak.Ndi",
         "Unity.Recorder",
-        "Unity.Recorder.Editor",
-        "Klak.Ndi"
+        "Unity.Recorder.Editor"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

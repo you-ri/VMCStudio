@@ -445,8 +445,9 @@ MonoBehaviour:
   index: 2
   origin: {fileID: 0}
   enableNoiseCancel: 1
-  speed: 20
-  threthold: 0.1
+  interpolationSpeed: 100
+  positionThrethold: 0.1
+  rotationThrethold: 10
 --- !u!1001 &942816203
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1192,11 +1193,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1634249763, guid: 66e0df43d6afc0f4aaa4c08e0317c83c, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 1634249763, guid: 66e0df43d6afc0f4aaa4c08e0317c83c, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 144
       objectReference: {fileID: 0}
     - target: {fileID: 1634249763, guid: 66e0df43d6afc0f4aaa4c08e0317c83c, type: 3}
       propertyPath: m_AnchorMin.y
