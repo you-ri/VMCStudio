@@ -20,7 +20,9 @@
 
 ## 準備
 
-[GitHub VMCStudio](https://github.com/you-ri/VMCStudio) にアクセスして、クローンまたはダウンロードします。その後に以下のアセットをインポートします。
+[GitHub VMCStudio](https://github.com/you-ri/VMCStudio) にアクセスして、クローンまたはダウンロードします。その後に以下のアセットをインポートして、 External フォルダに配置します。
+
+![](https://imgur.com/Y3paCRI.png)
 
 - [Final IK 1.8](https://assetstore.unity.com/packages/tools/animation/final-ik-14290) *AssetStoreから購入する必要があります。
 - [SteamVR Plugin v2.2.0](https://assetstore.unity.com/packages/tools/integration/steamvr-plugin-32647)
