@@ -14,7 +14,7 @@
 ![](https://imgur.com/7e25AUK.png)
 
 ## 必須環境
-- Unity 2018.3.7 or later
+- Unity 2018.4.4 or later
 - VR Ready PC
 - HTC VIVE
 
