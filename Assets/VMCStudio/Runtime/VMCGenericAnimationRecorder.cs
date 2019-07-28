@@ -52,6 +52,9 @@ namespace VMCStudio
                 return;
             }
 
+            // 未使用のアセットを開放する
+            Resources.UnloadUnusedAssets ();
+
             // Animation
             var animationRecorder = ScriptableObject.CreateInstance<AnimationRecorderSettings> ();
             animationRecorder.name = "My Animation Recorder";
@@ -91,6 +94,7 @@ namespace VMCStudio
 
                 //RecordedObjectEntity.latestEntities = new RecordedObjectEntity[0];
                 RecordedObjectEntity.latestEntities.Add (new RecordedObjectEntity (target.GetComponent<Animator> (), latestRecordedClip));
+
             };
         }
 
