@@ -110,10 +110,10 @@ namespace Vox.Hands
     {
         private readonly int[] m_handBoneIndexMap;
         private readonly HumanPoseHandler m_poseHandler;
-        private readonly Animator m_rootObject;
+        private readonly GameObject m_rootObject;
         private HumanPose m_humanPose;
 
-        public HandRuntimeControl(Animator rootObject, Avatar avatar, HandType handType)
+        public HandRuntimeControl(GameObject rootObject, Avatar avatar, HandType handType)
         {
             m_rootObject = rootObject;
             m_poseHandler = new HumanPoseHandler(avatar, rootObject.transform);
@@ -132,12 +132,10 @@ namespace Vox.Hands
         public void UpdateHandPose(ref HandPoseData handPose)
         {
             m_poseHandler.GetHumanPose(ref m_humanPose);
-
-            var hipsPos = m_rootObject.GetBoneTransform (HumanBodyBones.Hips).transform.position;
-            var hipsRot = m_rootObject.GetBoneTransform (HumanBodyBones.Hips).transform.rotation;
-            //m_humanPose.bodyPosition = Vector3.zero;
-            //m_humanPose.bodyRotation = Quaternion.identity;
-
+            
+            m_humanPose.bodyPosition = Vector3.zero;
+            m_humanPose.bodyRotation = Quaternion.identity;
+            
             var i = 0;
             m_humanPose.muscles[m_handBoneIndexMap[i++]] = handPose.thumb.muscle1;
             m_humanPose.muscles[m_handBoneIndexMap[i++]] = handPose.thumb.spread;
@@ -159,11 +157,8 @@ namespace Vox.Hands
             m_humanPose.muscles[m_handBoneIndexMap[i++]] = handPose.little.spread;
             m_humanPose.muscles[m_handBoneIndexMap[i++]] = handPose.little.muscle2;
             m_humanPose.muscles[m_handBoneIndexMap[i++]] = handPose.little.muscle3;
-
+            
             m_poseHandler.SetHumanPose(ref m_humanPose);
-
-            m_rootObject.GetBoneTransform (HumanBodyBones.Hips).transform.position = hipsPos;
-            m_rootObject.GetBoneTransform (HumanBodyBones.Hips).transform.rotation = hipsRot;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.UIElements;
-using UnityEditor.Experimental.UIElements;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 
 public class VMCStudioControlMonitorWindow : EditorWindow
@@ -16,11 +16,11 @@ public class VMCStudioControlMonitorWindow : EditorWindow
     public void OnEnable()
     {
         // Each editor window contains a root VisualElement object
-        VisualElement root = this.GetRootVisualContainer();
+        VisualElement root = this.rootVisualElement;
 
         // Import UXML
         var visualTree = AssetDatabase.LoadAssetAtPath("Assets/VMCStudio/Editor/Experimental/VMCStudioControlMonitorWindow.uxml", typeof(VisualTreeAsset)) as VisualTreeAsset;
-        VisualElement labelFromUXML = visualTree.CloneTree(null);
+        VisualElement labelFromUXML = visualTree.CloneTree();
         root.Add(labelFromUXML);
 
 

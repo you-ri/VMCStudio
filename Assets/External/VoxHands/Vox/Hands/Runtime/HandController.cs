@@ -151,13 +151,12 @@ namespace Vox.Hands
                 Debug.LogError("HandController:Animator component doesn't have a valid avatar configured.");
             }
             
-            m_runtimeControl = new HandRuntimeControl(animator, m_avatar, m_handType);
+            m_runtimeControl = new HandRuntimeControl(gameObject, m_avatar, m_handType);
         }
 
         private void LateUpdate()
         {
             m_runtimeControl?.UpdateHandPose(ref m_handPoseData);
         }
-
     }
 }
